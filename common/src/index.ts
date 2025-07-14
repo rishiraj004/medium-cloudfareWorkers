@@ -13,12 +13,14 @@ export const signinInputSchema = z.object({
 export const blogInputSchema = z.object({
   title: z.string().min(1).max(255),
   content: z.string().min(1),
+  published: z.boolean().optional().default(true),
 });
 
 export const updateBlogInputSchema = z.object({
   id: z.uuid(),
   title: z.string().min(1).max(255).optional(),
   content: z.string().min(1).optional(),
+  published: z.boolean().optional(),
 });
 
 export type SignupInput = z.infer<typeof signupInputSchema>;

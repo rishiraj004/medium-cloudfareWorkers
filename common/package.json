@@ -3,7 +3,7 @@
     "zod": "^4.0.5"
   },
   "name": "@rishiraj04/medium-common",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "dist/index.js",
   "devDependencies": {

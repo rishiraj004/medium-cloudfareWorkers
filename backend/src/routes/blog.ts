@@ -40,6 +40,7 @@ blogRouter.post('/', async (c) => {
     data: {
       title: parsedBody.data.title,
       content: parsedBody.data.content,
+      published: parsedBody.data.published ?? true,
       authorId: c.get('jwtPayload').userId,
     },
   })
@@ -52,7 +53,11 @@ blogRouter.get('/bulk', async (c) => {
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
 
-  const blogs = await prisma.post.findMany()
+  const blogs = await prisma.post.findMany({
+    where: {
+      published: true,
+    }
+  })
 
   return c.json(blogs)
 })
@@ -93,6 +98,7 @@ blogRouter.put('/:id', async (c) => {
     data: {
       title: parsedBody.data.title,
       content: parsedBody.data.content,
+      published: parsedBody.data.published,
     },
   })
 
@@ -102,3 +108,99 @@ blogRouter.put('/:id', async (c) => {
 
   return c.json(blog)
 })
+
+blogRouter.get('/', async (c) => {
+  try {
+    const jwt = c.req.header('Authorization');
+    if (!jwt) {
+      c.status(401);
+      return c.json({ error: "unauthorized" });
+    }
+
+    const token = jwt.split(' ')[1];
+    const payload = await verify(token, c.env.JWT_SECRET);
+    
+    if (!payload) {
+      c.status(401);
+      return c.json({ error: "unauthorized" });
+    }
+
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    const blogs = await prisma.post.findMany({
+      where: {
+        published: true,
+      },
+      select: {
+        content: true,
+        title: true,
+        id: true,
+        published: true,
+        createdAt: true,
+        updatedAt: true,
+        author: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+
+    return c.json({ blogs });
+  } catch(e) {
+    c.status(500);
+    return c.json({ error: "error while fetching blogs" });
+  }
+});
+
+// New endpoint for user's own blogs (including drafts)
+blogRouter.get('/my', async (c) => {
+  try {
+    const jwt = c.req.header('Authorization');
+    if (!jwt) {
+      c.status(401);
+      return c.json({ error: "unauthorized" });
+    }
+
+    const token = jwt.split(' ')[1];
+    const payload = await verify(token, c.env.JWT_SECRET) as { userId: string };
+    
+    if (!payload || !payload.userId) {
+      c.status(401);
+      return c.json({ error: "unauthorized" });
+    }
+
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    const blogs = await prisma.post.findMany({
+      where: {
+        authorId: payload.userId,
+      },
+      select: {
+        content: true,
+        title: true,
+        id: true,
+        published: true,
+        createdAt: true,
+        updatedAt: true,
+        author: {
+          select: {
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+
+    return c.json({ blogs });
+  } catch(e) {
+    c.status(500);
+    return c.json({ error: "error while fetching user blogs" });
+  }
+});

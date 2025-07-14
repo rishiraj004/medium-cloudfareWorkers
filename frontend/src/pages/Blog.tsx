@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { apiClient, getCurrentUserId, type BlogPost } from "../utils/api";
 
 const Blog: React.FC = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [blog, setBlog] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -158,6 +159,28 @@ const Blog: React.FC = () => {
 
     return (
         <div className="blog-container max-w-4xl mx-auto p-6">
+            {/* Navigation buttons */}
+            <div className="flex gap-3 mb-6">
+                <button
+                    onClick={() => navigate('/blogs')}
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-md transition-colors flex items-center gap-2"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                    All Blogs
+                </button>
+                <button
+                    onClick={() => navigate('/my-blogs')}
+                    className="bg-purple-500 hover:bg-purple-600 text-white font-medium px-4 py-2 rounded-md transition-colors flex items-center gap-2"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    My Blogs
+                </button>
+            </div>
+
             {/* Edit controls */}
             <div className="flex justify-between items-center mb-6">
                 {isOwner && isEditing ? (

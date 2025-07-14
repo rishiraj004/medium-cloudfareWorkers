@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "zod": "^4.0.5"
+  },
+  "name": "@rishiraj04/medium-common",
+  "version": "1.0.2",
+  "description": "",
+  "main": "dist/index.js",
+  "devDependencies": {
+    "typescript": "^5.5.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "commonjs"
+}

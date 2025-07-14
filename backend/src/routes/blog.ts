@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import {decode, sign, verify} from 'hono/jwt'
 import { PrismaClient } from './../generated/prisma/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
+import { blogInputSchema, updateBlogInputSchema } from '@rishiraj04/medium-common'
 
 export const blogRouter = new Hono<{ Bindings: { DATABASE_URL: string, JWT_SECRET: string } }>()
 
@@ -25,15 +26,20 @@ blogRouter.use('/*', async (c, next) => {
 })
 
 blogRouter.post('/', async (c) => {
-    const body = await c.req.json()
+  const body = await c.req.json()
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
-  
+
+  const parsedBody = blogInputSchema.safeParse(body)
+  if (!parsedBody.success) {
+    return c.text('Invalid input', 400)
+  }
+
   const blog = await prisma.post.create({
     data: {
-      title: body.title,
-      content: body.content,
+      title: parsedBody.data.title,
+      content: parsedBody.data.content,
       authorId: c.get('jwtPayload').userId,
     },
   })
@@ -72,6 +78,10 @@ blogRouter.get('/:id', async (c) => {
 
 blogRouter.put('/:id', async (c) => {
   const body = await c.req.json()
+  const parsedBody = updateBlogInputSchema.safeParse(body)
+  if (!parsedBody.success) {
+    return c.text('Invalid input', 400)
+  }
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
@@ -81,8 +91,8 @@ blogRouter.put('/:id', async (c) => {
       id: c.req.param('id'),
     },
     data: {
-      title: body.title,
-      content: body.content,
+      title: parsedBody.data.title,
+      content: parsedBody.data.content,
     },
   })
 

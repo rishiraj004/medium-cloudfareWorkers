@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../utils/api';
-import type { BlogPost } from '../utils/api';
+import type { BlogPost, PaginationInfo } from '../utils/api';
 
 const MyBlogs: React.FC = () => {
     const [blogs, setBlogs] = useState<BlogPost[]>([]);
+    const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchMyBlogs = async () => {
+        const fetchMyBlogs = async (page: number) => {
             try {
                 setLoading(true);
                 setError(null);
@@ -22,14 +24,16 @@ const MyBlogs: React.FC = () => {
                     return;
                 }
 
-                const result = await apiClient.fetchMyBlogs();
+                const result = await apiClient.fetchMyBlogs(page, 6); // 6 blogs per page
                 
                 if (result.error) {
                     setError(result.error);
-                } else if (result.data && result.data.blogs) {
+                } else if (result.data) {
                     setBlogs(result.data.blogs);
+                    setPagination(result.data.pagination);
                 } else {
                     setBlogs([]);
+                    setPagination(null);
                 }
             } catch (err) {
                 setError('Failed to fetch your blogs');
@@ -39,8 +43,8 @@ const MyBlogs: React.FC = () => {
             }
         };
 
-        fetchMyBlogs();
-    }, [navigate]);
+        fetchMyBlogs(currentPage);
+    }, [currentPage, navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -134,6 +138,51 @@ const MyBlogs: React.FC = () => {
                             </div>
                         </Link>
                     ))}
+                </div>
+            )}
+
+            {/* Pagination Controls */}
+            {pagination && pagination.totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-4 mt-8">
+                    <button
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={!pagination.hasPrev}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-600 transition-colors"
+                    >
+                        Previous
+                    </button>
+                    
+                    <div className="flex space-x-2">
+                        {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                            <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-3 py-2 rounded-md transition-colors ${
+                                    page === currentPage
+                                        ? 'bg-blue-500 text-white'
+                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={!pagination.hasNext}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-600 transition-colors"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
+
+            {/* Pagination Info */}
+            {pagination && (
+                <div className="text-center text-gray-500 mt-4">
+                    Showing page {pagination.currentPage} of {pagination.totalPages} 
+                    ({pagination.totalBlogs} total blogs)
                 </div>
             )}
         </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { apiClient, type BlogPost } from "../utils/api";
+import { apiClient, getCurrentUserId, type BlogPost } from "../utils/api";
 
 const Blog: React.FC = () => {
     const { id } = useParams();
@@ -11,6 +11,10 @@ const Blog: React.FC = () => {
     const [editedTitle, setEditedTitle] = useState("");
     const [editedContent, setEditedContent] = useState("");
     const titleRef = useRef<HTMLInputElement>(null);
+    
+    // Check if current user is the author
+    const currentUserId = getCurrentUserId();
+    const isOwner = blog?.authorId === currentUserId;
 
     useEffect(() => {
         const fetchBlog = async () => {
@@ -85,10 +89,8 @@ const Blog: React.FC = () => {
     }
 
     function handleEdit(): void {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            // If not logged in, redirect to login page
-            window.location.href = '/signin';
+        if (!isOwner) {
+            setError('You can only edit your own blogs');
             return;
         }
 
@@ -158,7 +160,7 @@ const Blog: React.FC = () => {
         <div className="blog-container max-w-4xl mx-auto p-6">
             {/* Edit controls */}
             <div className="flex justify-between items-center mb-6">
-                {isEditing ? (
+                {isOwner && isEditing ? (
                     <input
                         ref={titleRef}
                         type="text"
@@ -172,7 +174,7 @@ const Blog: React.FC = () => {
                 )}
                 
                 <div className="flex gap-2">
-                    {isEditing ? (
+                    {isOwner && isEditing ? (
                         <>
                             <button
                                 className="bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-2 rounded-md transition-colors"
@@ -187,7 +189,7 @@ const Blog: React.FC = () => {
                                 Cancel
                             </button>
                         </>
-                    ) : (
+                    ) : isOwner ? (
                         <>
                             <button
                                 className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-md transition-colors"
@@ -206,13 +208,13 @@ const Blog: React.FC = () => {
                                 {blog.published ? 'Unpublish' : 'Publish'}
                             </button>
                         </>
-                    )}
+                    ) : null}
                 </div>
             </div>
             
             <article className="bg-white rounded-lg shadow-md p-8">
                 <div className="prose max-w-none">
-                    {isEditing ? (
+                    {isOwner && isEditing ? (
                         <textarea
                             value={editedContent}
                             onChange={(e) => setEditedContent(e.target.value)}

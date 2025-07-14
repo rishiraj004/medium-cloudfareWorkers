@@ -6,6 +6,7 @@ import Blog from './pages/Blog'
 import Blogs from './pages/Blogs'
 import CreateBlog from './pages/CreateBlog'
 import MyBlogs from './pages/MyBlogs'
+import NotFound from './pages/NotFound'
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/create" element={<CreateBlog />} />
           <Route path="/my-blogs" element={<MyBlogs />} />
+          {/* Catch-all route for 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </>

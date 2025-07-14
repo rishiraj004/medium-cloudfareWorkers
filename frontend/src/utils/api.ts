@@ -10,8 +10,22 @@ export interface ApiResponse<T> {
 export interface BlogPost extends BlogInput {
     id: string;
     published: boolean;
+    authorId?: string;
     createdAt?: string;
     updatedAt?: string;
+}
+
+export interface PaginationInfo {
+    currentPage: number;
+    totalPages: number;
+    totalBlogs: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
+
+export interface PaginatedBlogsResponse {
+    blogs: BlogPost[];
+    pagination: PaginationInfo;
 }
 
 export interface AuthResponse {
@@ -78,9 +92,9 @@ class ApiClient {
         });
     }
 
-    async fetchBlogs(): Promise<ApiResponse<{blogs: BlogPost[]}>> {
+    async fetchBlogs(page: number = 1, limit: number = 10): Promise<ApiResponse<PaginatedBlogsResponse>> {
         const token = localStorage.getItem('token');
-        return this.request<{blogs: BlogPost[]}>('/api/v1/blog', {
+        return this.request<PaginatedBlogsResponse>(`/api/v1/blog?page=${page}&limit=${limit}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -88,9 +102,9 @@ class ApiClient {
         });
     }
 
-    async fetchMyBlogs(): Promise<ApiResponse<{blogs: BlogPost[]}>> {
+    async fetchMyBlogs(page: number = 1, limit: number = 10): Promise<ApiResponse<PaginatedBlogsResponse>> {
         const token = localStorage.getItem('token');
-        return this.request<{blogs: BlogPost[]}>('/api/v1/blog/my', {
+        return this.request<PaginatedBlogsResponse>(`/api/v1/blog/my?page=${page}&limit=${limit}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -122,3 +136,19 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+
+// Utility function to decode JWT and get user ID
+export const getCurrentUserId = (): string | null => {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    
+    try {
+        // JWT payload is the middle part (base64 encoded)
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(atob(payload));
+        return decoded.userId || null;
+    } catch (error) {
+        console.error('Error decoding token:', error);
+        return null;
+    }
+};

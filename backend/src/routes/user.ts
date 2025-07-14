@@ -6,6 +6,14 @@ import { signinInputSchema, signupInputSchema } from '@rishiraj04/medium-common'
 
 export const userRouter = new Hono<{ Bindings: { DATABASE_URL: string, JWT_SECRET: string } }>()
 
+// Simple hash function for password (in production, use bcrypt)
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 userRouter.post('/signup', async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
@@ -17,10 +25,12 @@ userRouter.post('/signup', async (c) => {
     return c.text('Invalid input', 400)
   }
   try{
+    const hashedPassword = await hashPassword(parsedBody.data.password);
+    
     const user = await prisma.user.create({
       data: {
         email: parsedBody.data.email,
-        password: parsedBody.data.password,
+        password: hashedPassword,
       }
     })
     const token = await sign({ userId: user.id }, c.env.JWT_SECRET, 'HS256')
@@ -44,11 +54,16 @@ userRouter.post('/signin', async (c) => {
   const user = await prisma.user.findUnique({
     where: {
       email: parsedBody.data.email,
-      password: parsedBody.data.password
     }
   })
 
-  if (!user || user.password !== parsedBody.data.password) {
+  if (!user) {
+    return c.text('Invalid credentials', 401)
+  }
+
+  const hashedPassword = await hashPassword(parsedBody.data.password);
+  
+  if (user.password !== hashedPassword) {
     return c.text('Invalid credentials', 401)
   }
 

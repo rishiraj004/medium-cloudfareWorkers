@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { apiClient } from '../utils/api';
 import type { SigninInput } from '@rishiraj04/medium-common';
 
@@ -10,7 +10,18 @@ const Signin: React.FC = () => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        // Check if we were redirected from signup with a success message
+        if (location.state?.message) {
+            setSuccessMessage(location.state.message);
+            // Clear the message after 5 seconds
+            setTimeout(() => setSuccessMessage(null), 5000);
+        }
+    }, [location.state]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -54,6 +65,12 @@ const Signin: React.FC = () => {
             <div className="h-4"></div>
             
             <div className="bg-white p-6 rounded-lg shadow-md w-96">
+                {successMessage && (
+                    <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                        {successMessage}
+                    </div>
+                )}
+                
                 {error && (
                     <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                         {error}

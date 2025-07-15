@@ -46,11 +46,6 @@ const Blogs: React.FC = () => {
         fetchBlogs(currentPage);
     }, [currentPage, navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/signin');
-    };
-
     if (loading) {
         return (
             <div className="blogs-container max-w-6xl mx-auto p-6">
@@ -78,28 +73,8 @@ const Blogs: React.FC = () => {
     return (
         <div className="blogs-container max-w-6xl mx-auto p-6">
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
+            <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">All Blogs</h1>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => navigate('/my-blogs')}
-                        className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors"
-                    >
-                        My Blogs
-                    </button>
-                    <button
-                        onClick={() => navigate('/create')}
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
-                    >
-                        Create Blog
-                    </button>
-                    <button
-                        onClick={handleLogout}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors"
-                    >
-                        Logout
-                    </button>
-                </div>
             </div>
 
             {/* Blog List */}

@@ -44,14 +44,8 @@ const CreateBlog: React.FC = () => {
 
     return (
         <div className="create-blog-container max-w-4xl mx-auto p-6">
-            <div className="flex justify-between items-center mb-8">
+            <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Create New Blog</h1>
-                <button
-                    onClick={() => navigate('/blogs')}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors"
-                >
-                    Back to Blogs
-                </button>
             </div>
 
             {error && (
@@ -116,13 +110,6 @@ const CreateBlog: React.FC = () => {
                         className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium px-6 py-2 rounded-md transition-colors"
                     >
                         {loading ? 'Creating...' : 'Create Blog'}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => navigate('/blogs')}
-                        className="bg-gray-500 hover:bg-gray-600 text-white font-medium px-6 py-2 rounded-md transition-colors"
-                    >
-                        Cancel
                     </button>
                 </div>
             </form>

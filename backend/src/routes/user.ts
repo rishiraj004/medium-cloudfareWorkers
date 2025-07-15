@@ -1,8 +1,7 @@
 import { Hono } from 'hono'
-import { PrismaClient } from './../generated/prisma/edge'
-import { withAccelerate } from '@prisma/extension-accelerate'
 import {decode, sign, verify} from 'hono/jwt'
 import { signinInputSchema, signupInputSchema } from '@rishiraj04/medium-common'
+import { createPrismaClient } from '../utils/prisma'
 
 export const userRouter = new Hono<{ Bindings: { DATABASE_URL: string, JWT_SECRET: string } }>()
 
@@ -15,9 +14,7 @@ async function hashPassword(password: string): Promise<string> {
 }
 
 userRouter.post('/signup', async (c) => {
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env.DATABASE_URL,
-  }).$extends(withAccelerate())
+  const prisma = createPrismaClient(c.env.DATABASE_URL)
   
   const body = await c.req.json()
   const parsedBody = signupInputSchema.safeParse(body)
@@ -41,9 +38,7 @@ userRouter.post('/signup', async (c) => {
 })
 
 userRouter.post('/signin', async (c) => {
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env.DATABASE_URL,
-  }).$extends(withAccelerate())
+  const prisma = createPrismaClient(c.env.DATABASE_URL)
 
   const body = await c.req.json()
   const parsedBody = signinInputSchema.safeParse(body)

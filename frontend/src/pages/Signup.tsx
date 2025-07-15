@@ -47,7 +47,7 @@ const Signup: React.FC = () => {
     };
 
 	return (
-        <div className="signup-container bg-gray-100 w-full h-screen flex flex-col items-center justify-center">
+        <div className="signup-container bg-gray-100 w-full min-h-[calc(100vh-4rem)] flex flex-col items-center justify-start pt-8">
             <div className="text-center text-2xl font-bold text-gray-800">
                 <h1>Create an account</h1>
             </div>
